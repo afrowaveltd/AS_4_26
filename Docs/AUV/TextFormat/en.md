@@ -246,3 +246,224 @@ It:
 
 It is a tool for people.
 The system itself speaks AUV Wire.
+
+---
+
+## 8. Well-known typed wrappers (non-normative)
+
+AUV intentionally keeps its base type set small.
+Higher layers may use well-known wrapper objects to represent additional logical types.
+
+This section is **non-normative**: it recommends conventions but does not change AUV itself.
+
+Recommended wrapper shape:
+
+* An Object with reserved keys:
+
+  * `"$t"`: String type name
+  * `"$v"`: AUV value payload
+  * optional additional fields (e.g., `"unit"`, `"tz"`, `"scale"`)
+
+Examples:
+
+* Timestamp (epoch milliseconds):
+
+  * `{ "$t": "time", "$v": 1735862400000, "unit": "ms", "tz": "UTC" }`
+
+* Decimal (arbitrary precision, as string):
+
+  * `{ "$t": "decimal", "$v": "1234.5600" }`
+
+* UUID (canonical AUV form is Binary(16)):
+
+  * `{ "$t": "uuid", "$v": <Binary(16)> }`
+
+Implementations MAY support additional wrappers, but SHOULD keep the wrapper surface minimal.
+
+---
+
+## 9. Test vectors (AUV Wire v1)
+
+Notes:
+
+* Hex bytes are written as space-separated pairs.
+* VarUInt lengths shown here all fit in one byte.
+
+### 9.1 Primitive values
+
+* Null
+
+  * AJIS: `null`
+  * Wire: `00 00`
+
+* Bool (true)
+
+  * AJIS: `true`
+  * Wire: `01 01 01`
+
+* Int64 (1)
+
+  * AJIS: `1`
+  * Wire: `02 08 01 00 00 00 00 00 00 00`
+
+* Float64 (1.0)
+
+  * AJIS: `1.0`
+  * Wire: `03 08 00 00 00 00 00 00 F0 3F`
+
+* Char ('A')
+
+  * AJIS: `'A'`
+  * Wire: `04 04 41 00 00 00`
+
+* String ("hi")
+
+  * AJIS: `"hi"`
+  * Wire: `05 02 68 69`
+
+* Binary (DE AD BE EF)
+
+  * AJIS: `hex"DE AD BE EF"`
+  * Wire: `06 04 DE AD BE EF`
+
+### 9.2 Composite values
+
+* Array ([1, true])
+
+  * AJIS: `[ 1, true ]`
+  * Payload: `02 08 01 00 00 00 00 00 00 00 01 01 01`
+  * Wire: `07 0D 02 08 01 00 00 00 00 00 00 00 01 01 01`
+
+* Object ({"a": 1})
+
+  * AJIS: `{ "a": 1 }`
+  * Payload: `05 01 61 02 08 01 00 00 00 00 00 00 00`
+  * Wire: `08 0D 05 01 61 02 08 01 00 00 00 00 00 00 00`
+
+### 9.3 Boundary and special cases
+
+#### Int64 boundaries
+
+* Zero
+
+  * AJIS: `0`
+  * Wire: `02 08 00 00 00 00 00 00 00 00`
+
+* Minus one
+
+  * AJIS: `-1`
+  * Wire: `02 08 FF FF FF FF FF FF FF FF`
+
+* Int64 max
+
+  * AJIS: `9223372036854775807`
+  * Wire: `02 08 FF FF FF FF FF FF FF 7F`
+
+* Int64 min
+
+  * AJIS: `-9223372036854775808`
+  * Wire: `02 08 00 00 00 00 00 00 00 80`
+
+#### Float64 special values (IEEE 754)
+
+* +0.0
+
+  * AJIS: `0.0`
+  * Wire: `03 08 00 00 00 00 00 00 00 00`
+
+* -0.0
+
+  * AJIS: `-0.0`
+  * Wire: `03 08 00 00 00 00 00 00 00 80`
+
+* +Infinity
+
+  * AJIS: `inf`
+  * Wire: `03 08 00 00 00 00 00 00 F0 7F`
+
+* -Infinity
+
+  * AJIS: `-inf`
+  * Wire: `03 08 00 00 00 00 00 00 F0 FF`
+
+* NaN (canonical quiet NaN)
+
+  * AJIS: `nan`
+  * Wire: `03 08 00 00 00 00 00 00 F8 7F`
+
+#### UTF-8 strings (non-ASCII)
+
+* Czech character
+
+  * AJIS: `"č"`
+  * UTF-8: `C4 8D`
+  * Wire: `05 02 C4 8D`
+
+* Emoji
+
+  * AJIS: `"🙂"`
+  * UTF-8: `F0 9F 99 82`
+  * Wire: `05 04 F0 9F 99 82`
+
+#### Nested structures (exact lengths)
+
+* Nested array
+
+  * AJIS: `[ [1], [true, null] ]`
+  * Wire:
+
+    * `07 13 07 0A 02 08 01 00 00 00 00 00 00 00 07 05 01 01 01 00 00`
+
+* Nested object
+
+  * AJIS: `{ "a": { "b": 1 } }`
+  * Wire:
+
+    * `08 12 05 01 61 08 0D 05 01 62 02 08 01 00 00 00 00 00 00 00`
+
+Notes:
+
+* Object key order is canonical UTF-8 lexicographic order.
+* Length bytes in the examples above are exact.
+
+---
+
+## 10. Real-world test vector (ApiResponse-like)
+
+This example demonstrates a typical structured response object with a nested `data` object.
+
+### 10.1 AJIS
+
+```text
+{
+  "data": {
+    "explain": "Lists active jobs and prints extra details.",
+    "risk": "low",
+    "script": "jobs list -please"
+  },
+  "message": "",
+  "success": true
+}
+```
+
+### 10.2 Wire (AUV Wire v1)
+
+Canonical object key order:
+
+* outer: `data`, `message`, `success`
+* inner `data`: `explain`, `risk`, `script`
+
+Wire:
+
+`08 7B 05 04 64 61 74 61 08 5C 05 07 65 78 70 6C 61 69 6E 05 2B 4C 69 73 74 73 20 61 63 74 69 76 65 20 6A 6F 62 73 20 61 6E 64 20 70 72 69 6E 74 73 20 65 78 74 72 61 20 64 65 74 61 69 6C 73 2E 05 04 72 69 73 6B 05 03 6C 6F 77 05 06 73 63 72 69 70 74 05 11 6A 6F 62 73 20 6C 69 73 74 20 2D 70 6C 65 61 73 65 05 07 6D 65 73 73 61 67 65 05 00 05 07 73 75 63 63 65 73 73 01 01 01`
+
+---
+
+## 11. AJIS float literals for special values (non-normative)
+
+AJIS MAY provide dedicated literals for IEEE 754 special values:
+
+* `inf`, `-inf`
+* `nan`
+
+If supported, these literals MUST map to the canonical Float64 encodings used in section 9.3.
