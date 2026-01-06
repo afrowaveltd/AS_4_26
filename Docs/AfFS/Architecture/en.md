@@ -11,7 +11,7 @@ It is a **userspace storage engine**.
 
 ## What AfFS is
 
-AfFS is a storage abstraction that:
+AfFS is a storage abstraction that: 
 
 * stores structured and unstructured data,
 * preserves data integrity across restarts,
