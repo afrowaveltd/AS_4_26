@@ -1,0 +1,5 @@
+// comment
+{
+  "b": 2, /* another comment */
+  "a": 1
+}

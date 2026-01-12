@@ -27,23 +27,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\mukwano\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\lo505926\\.nuget\\packages\\": {},
+    "D:\\vs\\shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\AS_4_26\\src\\runtime\\dotnet\\As426.AfFS.Cli\\As426.AfFS.Cli.csproj",
+      "projectUniqueName": "D:\\AS_4_26\\src\\runtime\\dotnet\\As426.AfFS.Cli\\As426.AfFS.Cli.csproj",
       "projectName": "As426.AfFS.Cli",
-      "projectPath": "E:\\AS_4_26\\src\\runtime\\dotnet\\As426.AfFS.Cli\\As426.AfFS.Cli.csproj",
-      "packagesPath": "C:\\Users\\mukwano\\.nuget\\packages\\",
-      "outputPath": "E:\\AS_4_26\\src\\runtime\\dotnet\\As426.AfFS.Cli\\obj\\",
+      "projectPath": "D:\\AS_4_26\\src\\runtime\\dotnet\\As426.AfFS.Cli\\As426.AfFS.Cli.csproj",
+      "packagesPath": "C:\\Users\\lo505926\\.nuget\\packages\\",
+      "outputPath": "D:\\AS_4_26\\src\\runtime\\dotnet\\As426.AfFS.Cli\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "D:\\vs\\shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\mukwano\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\lo505926\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -59,8 +59,8 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "E:\\AS_4_26\\src\\runtime\\dotnet\\As426.AfFS.Core\\As426.AfFS.Core.csproj": {
-              "projectPath": "E:\\AS_4_26\\src\\runtime\\dotnet\\As426.AfFS.Core\\As426.AfFS.Core.csproj"
+            "D:\\AS_4_26\\src\\runtime\\dotnet\\As426.AfFS.Core\\As426.AfFS.Core.csproj": {
+              "projectPath": "D:\\AS_4_26\\src\\runtime\\dotnet\\As426.AfFS.Core\\As426.AfFS.Core.csproj"
             }
           }
         }

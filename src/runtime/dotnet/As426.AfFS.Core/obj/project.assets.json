@@ -8,23 +8,23 @@
     "net10.0": []
   },
   "packageFolders": {
-    "C:\\Users\\mukwano\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\lo505926\\.nuget\\packages\\": {},
+    "D:\\vs\\shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\AS_4_26\\src\\runtime\\dotnet\\As426.AfFS.Core\\As426.AfFS.Core.csproj",
+      "projectUniqueName": "D:\\AS_4_26\\src\\runtime\\dotnet\\As426.AfFS.Core\\As426.AfFS.Core.csproj",
       "projectName": "As426.AfFS.Core",
-      "projectPath": "E:\\AS_4_26\\src\\runtime\\dotnet\\As426.AfFS.Core\\As426.AfFS.Core.csproj",
-      "packagesPath": "C:\\Users\\mukwano\\.nuget\\packages\\",
-      "outputPath": "E:\\AS_4_26\\src\\runtime\\dotnet\\As426.AfFS.Core\\obj\\",
+      "projectPath": "D:\\AS_4_26\\src\\runtime\\dotnet\\As426.AfFS.Core\\As426.AfFS.Core.csproj",
+      "packagesPath": "C:\\Users\\lo505926\\.nuget\\packages\\",
+      "outputPath": "D:\\AS_4_26\\src\\runtime\\dotnet\\As426.AfFS.Core\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "D:\\vs\\shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\mukwano\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\lo505926\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],

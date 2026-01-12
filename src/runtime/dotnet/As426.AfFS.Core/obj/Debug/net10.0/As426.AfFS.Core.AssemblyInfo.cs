@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("As426.AfFS.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5153b75b879c24fed54459c44d4df59e65f98e7d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c5a1c327fbb119cb839cc394057fc9186a4e1144")]
 [assembly: System.Reflection.AssemblyProductAttribute("As426.AfFS.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("As426.AfFS.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
