@@ -121,14 +121,17 @@ static ajis_error_code lex_number(ajis_lexer *lx, ajis_token *out, ajis_error *e
 
     /* integer part */
     int saw_digit = 0;
-    int sep_char = 0; /* 0 = none, otherwise one of ' ', '_' ',' */
+    int sep_char = 0;
+    int group_len = 0;
+    int saw_sep = 0;
 
     for (;;) {
         int b = ajis_input_peek(lx->in);
         if (b < 0) break;
 
         if (is_digit(b)) {
-            saw_digit = 1;
+        saw_digit = 1;
+            group_len++;
             (void)ajis_input_next(lx->in, NULL);
             continue;
         }
@@ -147,6 +150,23 @@ static ajis_error_code lex_number(ajis_lexer *lx, ajis_token *out, ajis_error *e
             }
 
             int this_sep = b;
+            /* grouping validation */
+        if (!saw_sep) {
+         /* first group: 1..3 digits */
+            if (group_len < 1 || group_len > 3) {
+        set_err(err, AJIS_ERR_INVALID_NUMBER, lx->in, "invalid first digit group size");
+        return AJIS_ERR_INVALID_NUMBER;
+    }
+    saw_sep = 1;
+} else {
+    /* subsequent groups must be exactly 3 */
+    if (group_len != 3) {
+        set_err(err, AJIS_ERR_INVALID_NUMBER, lx->in, "invalid digit group size (must be 3)");
+        return AJIS_ERR_INVALID_NUMBER;
+    }
+}
+group_len = 0;
+
             if (sep_char == 0) sep_char = this_sep;
             else if (sep_char != this_sep) {
                 set_err(err, AJIS_ERR_INVALID_NUMBER, lx->in, "mixed number separators");
@@ -164,6 +184,11 @@ static ajis_error_code lex_number(ajis_lexer *lx, ajis_token *out, ajis_error *e
         set_err(err, AJIS_ERR_INVALID_NUMBER, lx->in, "expected digits");
         return AJIS_ERR_INVALID_NUMBER;
     }
+    if (saw_sep && group_len != 3) {
+    set_err(err, AJIS_ERR_INVALID_NUMBER, lx->in, "invalid last digit group size (must be 3)");
+    return AJIS_ERR_INVALID_NUMBER;
+}
+
 
     /* fraction */
     if (consume_if(lx->in, '.')) {
@@ -282,13 +307,7 @@ ajis_error_code ajis_lexer_next(ajis_lexer *lx, ajis_token *out_tok, ajis_error 
 
     /* default output */
     set_tok(out_tok, AJIS_TOKEN_INVALID, 0, 0);
-    if (err) {
-    err->code = AJIS_OK;
-    err->location.line = 0;
-    err->location.column = 0;
-    err->location.offset = 0;
-    err->context = NULL;
-}
+    ajis_error_reset(err);
 
 
     /* skip whitespace + comments */

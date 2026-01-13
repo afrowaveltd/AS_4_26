@@ -83,6 +83,16 @@ static inline ajis_error ajis_error_ok(void) {
     return err;
 }
 
+static inline void ajis_error_reset(ajis_error *err) {
+    if (!err) return;
+    err->code = AJIS_OK;
+    err->location.line = 0;
+    err->location.column = 0;
+    err->location.offset = 0;
+    err->context = NULL;
+}
+
+
 static inline int ajis_error_is_ok(const ajis_error *err) {
     return err && err->code == AJIS_OK;
 }
