@@ -80,3 +80,41 @@ Only one separator type may be used per number.
 - Supports common conventions without introducing locale-dependent behavior.
 - Prevents ambiguity by forbidding mixed separators.
 - Decimal separator remains `.` only; comma is never a decimal separator.
+
+## DD-007: String handling modes (RAW vs DECODED)
+
+AJIS distinguishes between two string handling modes at parse time:
+
+### RAW mode (default, normative)
+
+- String tokens carry a raw span into the original input buffer.
+- No unescaping or decoding is performed by the lexer or parser.
+- The parser guarantees correct string literal syntax (quotes and escapes).
+- This mode avoids allocations and is suitable for high-performance and low-level use cases.
+
+### DECODED mode (optional)
+
+- String contents are unescaped and decoded into a target buffer.
+- Requires a caller-provided allocation strategy (arena, allocator callback, etc.).
+- Intended for higher-level consumers that prefer convenience over raw performance.
+
+RAW mode is the normative baseline for AJIS v1. DECODED mode is optional and non-normative.
+
+---
+
+## DD-008: Multiline strings (non-normative option)
+
+By default, AJIS string literals follow JSON-compatible rules:
+
+- Unescaped newline characters inside string literals are considered invalid.
+
+An optional non-normative parser option MAY allow multiline strings:
+
+- Raw newline characters inside string literals are accepted.
+- Newlines are normalized internally to the escape sequence `\n`.
+- Canonical output MUST escape newlines as `\n`.
+- Round-trip preservation of raw newlines is not guaranteed.
+
+This option exists to support practical use cases such as large text blocks,
+translations, and documentation strings, while preserving deterministic
+canonical output.
