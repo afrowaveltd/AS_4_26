@@ -167,26 +167,136 @@ Permitted digit separators:
 - comma `,` (U+002C)
 - ASCII space ` ` (U+0020)
 
-Rules:
+#### General Rules
 
 - A separator MAY appear only between digits.
 - A separator MUST NOT appear at the beginning or end of the digit sequence.
 - A separator MUST NOT appear adjacent to the decimal point or exponent marker.
+- A separator MUST NOT appear immediately after a base prefix (`0x`, `0b`, `0o`).
 - Only one separator type MAY be used within a single number.
+- Double separators (consecutive separators) are not permitted.
 - Separators have no semantic meaning and are ignored during numeric conversion.
 
-Examples (valid):
+#### Base-Specific Grouping Rules
 
+Different number bases have specific grouping requirements to maintain consistency and readability:
+
+**Decimal numbers:**
+- Grouping by 3 digits (thousands separator convention)
+- First group: 1-3 digits
+- Subsequent groups: exactly 3 digits
+- Examples: `1_000`, `12_345_678`, `1,000,000`, `999 999 999`
+
+**Binary numbers (`0b`):**
+- Grouping by 4 bits (nibble/hex-digit alignment)
+- First group: 1-4 bits
+- Subsequent groups: exactly 4 bits
+- Examples: `0b1010_1111`, `0b10_1010_0011`, `0b1111 0000 1010`
+
+**Hexadecimal numbers (`0x`):**
+- Grouping by 2 OR 4 hex digits (byte or word alignment)
+- First group determines the grouping mode:
+  - 1-2 digits → subsequent groups must be 2 digits
+  - 3-4 digits → subsequent groups must be 4 digits
+- All subsequent groups must match the established size
+- Examples: `0xFF_AA_00` (by-2), `0xDEAD_BEEF` (by-4), `0xF_AA_BB_CC` (by-2)
+
+**Octal numbers (`0o`):**
+- No strict grouping requirement (flexible)
+- Separators may appear between any digits for visual clarity
+- Examples: `0o777_123`, `0o7_55`, `0o1_234_567`
+
+#### Examples (valid)
+
+Decimal:
 - `1_000_000`
 - `1,000,000`
 - `1 000 000`
+- `12_345_678`
 
-Examples (invalid):
+Binary:
+- `0b1010_1111`
+- `0b10_1010_0011`
+- `0b1111,0000,1010`
 
-- `1,000_000` (mixed separators)
-- `1 000,000` (mixed separators)
+Hexadecimal:
+- `0xFF_AA_00_BB` (grouping by 2)
+- `0xDEAD_BEEF` (grouping by 4)
+- `0xF_AA` (grouping by 2, first group is 1 digit)
+
+Octal:
+- `0o777_123`
+- `0o7_55`
+
+#### Examples (invalid)
+
+- `1,000_000` (mixed separators: comma and underscore)
+- `1 000,000` (mixed separators: space and comma)
 - `1._000` (adjacent to decimal point)
 - `1,` (trailing separator)
+- `_1000` (leading separator)
+- `0b10_11` (binary grouping by 2 instead of 4)
+- `0b1010_10` (inconsistent binary grouping: 4 then 2)
+- `0xFF_AABB` (hex mixing grouping-by-2 and grouping-by-4)
+- `0xFFAA_BB` (hex inconsistent: 4 then 2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Future versions must remain backward compatible where possible.This document specifies AJIS version 1.## 15. Versioning---Canonical form is required for test vectors.- deterministic output.- normalized whitespace,- no trailing commas,- object keys are ordered lexicographically (byte-wise),AJIS defines a canonical serialization:## 14. Canonical Form---canonical serialization.but recovery behavior is outside the scope of AJIS v1 and MUST NOT affectImplementations MAY provide a non-normative recovery mode for tooling purposes,- Parsers MUST reject any input that does not conform to this specification.Strict parsing is normative:## 13. Parsing Strictness---Binary values are intended for small to medium payloads.- base64 (`b64"..."`)- hexadecimal (`hex"..."`)AJIS supports binary literals:## 12. Binary Values---The exact literal form is reserved for full definition after v1 stabilization.AJIS supports a `char` value representing a single Unicode scalar value.## 11. Char Values---- `1__000` (double separator)- `1e_5` (separator adjacent to exponent)- `0x_DEAD` (separator immediately after prefix)- `0x_DEAD` (separator immediately after prefix)
+- `1e_5` (separator adjacent to exponent)
+- `1__000` (double separator)
 
 ---
 

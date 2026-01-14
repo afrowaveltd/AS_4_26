@@ -1,0 +1,14 @@
+[
+  "basic string",
+  "quote: \"",
+  "backslash: \\",
+  "slash: \/",
+  "backspace: \b",
+  "formfeed: \f",
+  "newline: \n",
+  "carriage return: \r",
+  "tab: \t",
+  "unicode: \u0041",
+  "unicode emoji: \uD83C\uDF89",
+  "all together: \"\\\b\f\n\r\t\u0041"
+]
