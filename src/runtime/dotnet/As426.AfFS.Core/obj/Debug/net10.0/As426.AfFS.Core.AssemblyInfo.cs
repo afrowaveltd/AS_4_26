@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("As426.AfFS.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+308eb83ea7358c4a52ee49a6f8695cb4f5ffe3fe")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+57f14ef8097a05cd69ff6a65e56b8b9d02d6621d")]
 [assembly: System.Reflection.AssemblyProductAttribute("As426.AfFS.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("As426.AfFS.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
