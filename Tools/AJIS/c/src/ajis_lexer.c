@@ -214,11 +214,16 @@ static ajis_error_code lex_number(ajis_lexer *lx, ajis_token *out, ajis_error *e
                                 return AJIS_ERR_INVALID_BINARY;
                             }
                             group_size = 4;
-                        } else if (is_oct) {
-                            /* Octal: no strict grouping requirement, just track for consistency check */
-                            group_size = 0; /* 0 = no grouping validation */
-                        }
+                       } else if (is_oct) {
+                            /* Octal grouped like decimal: groups of 3, first group 1-3 */
+                            if (group_len < 1 || group_len > 3) {
+                                set_err(err, AJIS_ERR_INVALID_NUMBER, lx->in, "octal first group must be 1-3 digits");
+                                return AJIS_ERR_INVALID_NUMBER;
+                            }
+                        group_size = 3;
+                       }
                         saw_sep = 1;
+
                     } else {
                         /* Subsequent separators: must match established group size */
                         if (group_size > 0 && group_len != group_size) {
@@ -247,7 +252,7 @@ static ajis_error_code lex_number(ajis_lexer *lx, ajis_token *out, ajis_error *e
                 int valid_run = 0;
                 if (is_hex && (run == 2 || run == 4)) valid_run = 1;
                 else if (is_bin && run == 4) valid_run = 1;
-                else if (is_oct && run > 0) valid_run = 1; /* octal: no strict grouping */
+                else if (is_oct && run == 3) valid_run = 1;
                 
                 if (!valid_run) {
                     break;

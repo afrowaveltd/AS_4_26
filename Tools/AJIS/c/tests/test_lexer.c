@@ -1,5 +1,6 @@
 #include "../include/ajis_input.h"
 #include "../include/ajis_lexer.h"
+#include "../include/ajis_error_print.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,6 +85,7 @@ static int read_file_all(const char* path, char** out_data, size_t* out_size) {
 
 typedef struct TestFilter {
     int dump;
+    int show_errors;      /* --errors: show pretty error reports for expected failures */
 
     int run_all;          /* --all: traverse test_data */
     int only_valid;       /* --valid */
@@ -142,7 +144,7 @@ typedef struct TestStats {
     int skipped;
 } TestStats;
 
-static int run_one_file(const char* path, int dump, TestStats* st) {
+static int run_one_file(const char* path, int dump, int show_errors, TestStats* st) {
     int expect_fail = expect_fail_from_path(path);
 
     if (st) st->total++;
@@ -175,6 +177,7 @@ if (src_len == 0) {
     ajis_lexer_init(&lx, &in, opt);
 
     int saw_error = 0;
+    ajis_error first_error = ajis_error_ok();
 
     for (;;) {
         ajis_token tok;
@@ -183,11 +186,11 @@ if (src_len == 0) {
         ajis_error_code rc = ajis_lexer_next(&lx, &tok, &err);
         if (rc != AJIS_OK) {
             saw_error = 1;
+            first_error = err; /* save first error for later display */
             if (dump) {
-                fprintf(stderr, "LEX ERROR in %s: code=%d at line=%u col=%u off=%zu (%s)\n",
-                    path,
-                    (int)err.code, err.location.line, err.location.column, err.location.offset,
-                    err.context ? err.context : "no ctx");
+                fprintf(stderr, "\n");
+                ajis_error_print_pretty(stderr, path, src, src_len, &err);
+                fprintf(stderr, "\n");
             }
             break;
         }
@@ -200,8 +203,6 @@ if (src_len == 0) {
         if (tok.type == AJIS_TOKEN_EOF) break;
     }
 
-    free(src);
-
     int ok = 0;
     if (!expect_fail) {
         ok = !saw_error;
@@ -212,11 +213,26 @@ if (src_len == 0) {
     if (ok) {
         if (st) st->passed++;
         printf("[PASS] %s%s\n", path, expect_fail ? " (expected fail)" : "");
+        
+        /* If --errors is enabled and this was an expected failure, show the error */
+        if (show_errors && expect_fail && saw_error) {
+            printf("\n");
+            ajis_error_print_pretty(stdout, path, src, src_len, &first_error);
+            printf("\n");
+        }
     } else {
         if (st) st->failed++;
         printf("[FAIL] %s%s\n", path, expect_fail ? " (expected fail)" : "");
+        
+        /* For unexpected failures, always show the error */
+        if (saw_error) {
+            printf("\n");
+            ajis_error_print_pretty(stdout, path, src, src_len, &first_error);
+            printf("\n");
+        }
     }
 
+    free(src);
     return ok;
 }
 
@@ -269,7 +285,7 @@ static void run_tree_recursive(const char* dir, const TestFilter* f, TestStats* 
         if (!matches_category(path, f)) continue;
         if (!matches_validity(path, f)) continue;
 
-        run_one_file(path, f->dump, st);
+        run_one_file(path, f->dump, f->show_errors, st);
     }
 
     closedir(d);
@@ -294,6 +310,7 @@ static void usage(const char* exe) {
         "  --complex          Only complex category\n"
         "  --canonical        Only canonical category\n"
         "  --dump             Dump tokens + errors\n"
+        "  --errors           Show pretty error reports for expected failures\n"
         "  -h, --help         Show help\n\n"
         "Examples:\n"
         "  %s tests/test_data/valid/numbers/n_basic_valid.ajis\n"
@@ -311,6 +328,7 @@ static int parse_args(int argc, char** argv, TestFilter* f) {
         const char* a = argv[i];
 
         if (strcmp(a, "--dump") == 0) f->dump = 1;
+        else if (strcmp(a, "--errors") == 0) f->show_errors = 1;
         else if (strcmp(a, "--all") == 0) f->run_all = 1;
         else if (strcmp(a, "--valid") == 0) f->only_valid = 1;
         else if (strcmp(a, "--invalid") == 0) f->only_invalid = 1;
@@ -370,7 +388,7 @@ int main(int argc, char** argv) {
         printf("[TEST] File: %s\n", path);
         if (f.dump) printf("[TEST] Dump: ON\n");
 
-        run_one_file(path, f.dump, &st);
+        run_one_file(path, f.dump, f.show_errors, &st);
     }
 
    printf("\n[SUMMARY] total=%d passed=%d failed=%d skipped=%d\n",
