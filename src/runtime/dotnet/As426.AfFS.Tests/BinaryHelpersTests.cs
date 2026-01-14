@@ -9,10 +9,10 @@ namespace As426.AfFS.Tests
       public void ComputeCrc32C_ShouldMatchKnownVector()
       {
          // Arrange
-         // Standardní testovací řetězec pro CRC32C
+         // Standard test string for CRC32C
          byte[] data = Encoding.ASCII.GetBytes("123456789");
 
-         // Expected value pro Castagnoli polynom
+         // Expected value for Castagnoli polynomial
          uint expectedChecksum = 0xE3069283u;
 
          // Act
@@ -21,7 +21,7 @@ namespace As426.AfFS.Tests
          // Assert
          Assert.Equal(expectedChecksum, actualChecksum);
 
-         // Pro kontrolu vypíšeme do konzole
+         // For verification, write to console
          Console.WriteLine($"Expected: 0x{expectedChecksum:X8}");
          Console.WriteLine($"Actual:   0x{actualChecksum:X8}");
       }

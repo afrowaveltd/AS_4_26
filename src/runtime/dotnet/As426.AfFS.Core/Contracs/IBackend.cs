@@ -1,23 +1,23 @@
 ﻿namespace As426.AfFS.Core.Contracts
 {
    /// <summary>
-   /// Kategorizuje výsledek operace, jak je definováno v "Backend I/O Layer" [2].
-   /// Runtime používá tyto kategorie k deterministickému rozhodování.
+   /// Categorizes the operation result as defined in "Backend I/O Layer" [2].
+   /// The runtime uses these categories for deterministic decision-making.
    /// </summary>
    public enum BackendOperationCategory
    {
-      Ok,             // Operace proběhla v pořádku.
-      Partial,        // Některé bajty byly zpracovány, poté došlo k chybě.
-      TransientError, // Dočasná chyba (např. timeout, přetížení), lze zkusit znovu.
-      PermanentError, // Trvalá chyba média (např. bad sector), opakování je zbytečné.
-      Timeout,        // Časový limit operace byl překročen.
-      AccessDenied,   // Chyba oprávnění nebo přístupu.
-      OutOfSpace      // Diskové místo je vyčerpáno.
+      Ok,             // Operation was successful.
+      Partial,        // Some bytes were processed, then an error occurred.
+      TransientError, // Transient error (e.g., timeout, overload), can be retried.
+      PermanentError, // Permanent media error (e.g., bad sector), repeating is useless.
+      Timeout,        // Operation timeout exceeded.
+      AccessDenied,   // Permission or access error.
+      OutOfSpace      // Disk space exhausted.
    }
 
    /// <summary>
-   /// Strukturovaný výsledek operace. Neslouží jako výjimka, ale jako hodnota [1][4].
-   /// Umožňuje vrátit podrobnosti o tom, co se skutečně stalo (např. BytesProcessed).
+   /// Structured operation result. It does not serve as an exception, but as a value [1][4].
+   /// Allows returning details about what actually happened (e.g., BytesProcessed).
    /// </summary>
    public struct BackendResult
    {
@@ -32,42 +32,42 @@
    }
 
    /// <summary>
-   /// Abstraktní vrstva pro I/O operace. Odděluje logiku Runtime od fyzického úložiště [2].
-   /// Musí být implementovatelná jak v .NET (FileStream), tak v C (BIOS/Block device) pro BOS.
+   /// Abstract layer for I/O operations. Separates runtime logic from physical storage [2].
+   /// Must be implementable in both .NET (FileStream) and C (BIOS/Block device) for BOS.
    /// </summary>
    public interface IBackend
    {
       /// <summary>
-      /// Čte data z určitého offsetu do poskytnutého bufferu.
+      /// Reads data from a specific offset into the provided buffer.
       /// </summary>
-      /// <param name="offset">Absolutní pozice v bajtech.</param>
-      /// <param name="buffer">Buffer pro zapsání přečtených dat.</param>
-      /// <param name="count">Počet bajtů, které chceme přečíst.</param>
-      /// <returns>BackendResult s počtem přečtených bajtů a statusem.</returns>
+      /// <param name="offset">Absolute position in bytes.</param>
+      /// <param name="buffer">Buffer for writing the read data.</param>
+      /// <param name="count">Number of bytes we want to read.</param>
+      /// <returns>BackendResult with the number of bytes read and status.</returns>
       BackendResult Read(long offset, byte[] buffer, int count);
 
       /// <summary>
-      /// Zapisuje data na určitý offset.
+      /// Writes data to a specific offset.
       /// </summary>
-      /// <param name="offset">Absolutní pozice v bajtech.</param>
-      /// <param name="buffer">Buffer s daty k zápisu.</param>
-      /// <returns>BackendResult s počtem zapsaných bajtů a statusem.</returns>
+      /// <param name="offset">Absolute position in bytes.</param>
+      /// <param name="buffer">Buffer with data for writing.</param>
+      /// <returns>BackendResult with the number of bytes written and status.</returns>
       BackendResult Write(long offset, byte[] buffer, int count);
 
       /// <summary>
-      /// Zajišťuje trvanlivost dat (durability barrier).
-      /// Vynutí zápis cache disku do fyzického média [2].
+      /// Ensures data durability (durability barrier).
+      /// Forces disk cache write to physical media [2].
       /// </summary>
       BackendResult Flush();
 
       /// <summary>
-      /// Vrací celkovou velikost úložiště v bajtech.
+      /// Returns total storage size in bytes.
       /// </summary>
       long GetSize();
 
       /// <summary>
-      /// Vrací preferované zarovnání pro operace (např. velikost sektoru).
-      /// Důležité pro efektivní I/O a zamezení nezarovnaných čtení [2].
+      /// Returns preferred alignment for operations (e.g., sector size).
+      /// Important for efficient I/O and prevention of unaligned reads [2].
       /// </summary>
       int GetPreferredAlignment();
    }

@@ -4,8 +4,8 @@
 #include <stddef.h>
 
 typedef struct TestBuffer {
-    char*  data;   // NUL-terminated (pro debug výpisy), ale může obsahovat i NUL uvnitř pokud chceš
-    size_t size;   // počet bytů načtených ze souboru
+    char*  data;   // NUL-terminated (for debug output), but can contain NUL bytes internally if needed
+    size_t size;   // Number of bytes read from file
 } TestBuffer;
 
 TestBuffer test_read_file(const char* path);

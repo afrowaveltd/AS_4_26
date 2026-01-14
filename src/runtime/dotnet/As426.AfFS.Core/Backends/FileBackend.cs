@@ -3,8 +3,8 @@
 namespace As426.AfFS.Core.Backends
 {
    /// <summary>
-   /// Implementace Backend I/O vrstvy pomocí standardního souboru na hostitelském systému.
-   /// Implementuje kontrakt IBackend a mapuje I/O výjimky na strukturované BackendResult [2][1].
+   /// Implementation of the Backend I/O layer using a standard file on the host system.
+   /// Implements the IBackend contract and maps I/O exceptions to structured BackendResults [2][1].
    /// </summary>
    public class FileBackend : IBackend
    {
@@ -14,21 +14,21 @@ namespace As426.AfFS.Core.Backends
       public FileBackend(string filePath, FileMode mode, FileAccess access)
       {
          _filePath = filePath;
-         // Stream držíme otevřený po celou dobu života backendu.
+         // The stream is kept open for the lifetime of the backend.
          _stream = new FileStream(filePath, mode, access, FileShare.None);
       }
 
       /// <summary>
-      /// Přečte bajty z offsetu. Vrací BackendResult s počtem přečtených bajtů.
+      /// Reads bytes from an offset. Returns a BackendResult with the number of bytes read.
       /// </summary>
       public BackendResult Read(long offset, byte[] buffer, int count)
       {
          try
          {
-            // Ujistíme se, že jsme na správné pozici (explicitní offset)
+            // Ensuring we are at the correct position (explicit offset)
             _stream.Seek(offset, SeekOrigin.Begin);
 
-            // FileStream.Read vrací počet přečtených bajtů (může být 0, pokud je konec souboru)
+            // FileStream.Read returns the number of bytes read (can be 0 if end of file)
             int bytesRead = _stream.Read(buffer, 0, count);
 
             return new BackendResult
@@ -39,18 +39,18 @@ namespace As426.AfFS.Core.Backends
          }
          catch(IOException ioEx)
          {
-            // I/O výjimky v .NET jsou často dočasné (uzamčení souboru, chyba sítě) nebo trvalé (chyba disku).
-            // Zjednodušeně je označujeme jako TransientError, pokud specificky neidentifikujeme poškozený sektor.
+            // I/O exceptions in .NET are often transient (file lock, network error) or permanent (disk error).
+            // Simplistically, we label them as TransientError unless a corrupted sector is specifically identified.
             return new BackendResult
             {
                Status = BackendOperationCategory.TransientError,
                BytesProcessed = 0,
-               OsErrorCode = 0 // Nelze snadno získat Win32/Linux error code bez P/Invoke
+               OsErrorCode = 0 // Win32/Linux error codes cannot be easily obtained without P/Invoke
             };
          }
          catch(Exception ex)
          {
-            // Vše ostatní bereme jako AccessDenied nebo obecnou chybu
+            // Everything else is treated as AccessDenied or a general error
             return new BackendResult
             {
                Status = BackendOperationCategory.AccessDenied,
@@ -60,7 +60,7 @@ namespace As426.AfFS.Core.Backends
       }
 
       /// <summary>
-      /// Zapíše bajty na offset.
+      /// Writes bytes to an offset.
       /// </summary>
       public BackendResult Write(long offset, byte[] buffer, int count)
       {
@@ -94,13 +94,13 @@ namespace As426.AfFS.Core.Backends
       }
 
       /// <summary>
-      /// Zajišťuje, že bajty jsou fyzicky na disku (Durability Barrier) [2].
+      /// Ensures that bytes are physically on disk (Durability Barrier) [2].
       /// </summary>
       public BackendResult Flush()
       {
          try
          {
-            _stream.Flush(true); // true = flush to disk, ne jen do OS cache
+            _stream.Flush(true); // true = flush to disk, not just OS cache
             return new BackendResult
             {
                Status = BackendOperationCategory.Ok,
@@ -118,7 +118,7 @@ namespace As426.AfFS.Core.Backends
       }
 
       /// <summary>
-      /// Vrací délku souboru (velikost úložiště).
+      /// Returns file length (storage size).
       /// </summary>
       public long GetSize()
       {
@@ -126,15 +126,15 @@ namespace As426.AfFS.Core.Backends
       }
 
       /// <summary>
-      /// Pro soubor na filesystému vrátíme 1 bajt (není tam žádná bloková překážka).
-      /// Pro bloková zařízení to bude velikost sektoru [2].
+      /// For a file on the filesystem, we return 1 byte (no block boundary).
+      /// For block devices, this would be the sector size [2].
       /// </summary>
       public int GetPreferredAlignment()
       {
          return 1;
       }
 
-      // Důležité pro uvolnění zdrojů (implementace IDisposable by byla lepší, ale pro MVP stačí Dispose metoda)
+      // Important for releasing resources (IDisposable implementation would be better, but a Dispose method suffices for MVP)
       public void Dispose()
       {
          _stream?.Dispose();

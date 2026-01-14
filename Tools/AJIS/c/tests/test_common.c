@@ -30,7 +30,7 @@ TestBuffer test_read_file(const char* path) {
         return buf;
     }
 
-    // +1 pro NUL terminátor (pomáhá debug printům)
+    // +1 for NUL terminator (helps debug prints)
     buf.data = (char*)malloc((size_t)len + 1);
     if (!buf.data) {
         fprintf(stderr, "[TEST] Out of memory reading: %s\n", path);
