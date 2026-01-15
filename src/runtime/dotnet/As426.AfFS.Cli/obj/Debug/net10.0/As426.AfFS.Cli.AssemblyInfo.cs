@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("As426.AfFS.Cli")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ee7008c91e9ed0cc38e30d377103778b505884bc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e289a7350547e8c155baf430067e1d84a86dc23e")]
 [assembly: System.Reflection.AssemblyProductAttribute("As426.AfFS.Cli")]
 [assembly: System.Reflection.AssemblyTitleAttribute("As426.AfFS.Cli")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
