@@ -1,4 +1,1 @@
-{
-  "key": "value1",
-  "key": "value2"  // duplicate key - error
-}
+{"key": "value", "key": "duplicate"}

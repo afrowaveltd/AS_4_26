@@ -47,6 +47,9 @@ AJIS_TOKEN_TRUE,
 AJIS_TOKEN_FALSE,
 AJIS_TOKEN_NULL,
 
+/* binary literals */
+AJIS_TOKEN_HEX_BINARY,   /* hex"..." */
+AJIS_TOKEN_B64_BINARY,   /* b64"..." */
 
 /* error / invalid token */
 AJIS_TOKEN_INVALID

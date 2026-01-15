@@ -122,6 +122,88 @@ static int is_hex_digit(int b) {
 static int is_bin_digit(int b) { return b == '0' || b == '1'; }
 static int is_oct_digit(int b) { return b >= '0' && b <= '7'; }
 
+static int is_base64_char(int b) {
+    return (b >= 'A' && b <= 'Z') ||
+           (b >= 'a' && b <= 'z') ||
+           (b >= '0' && b <= '9') ||
+           b == '+' || b == '/' || b == '=';
+}
+
+/* Lex hex binary literal: hex"DEADBEEF" */
+static ajis_error_code lex_hex_binary(ajis_lexer *lx, ajis_token *out, ajis_error *err) {
+    size_t start = lx->in->offset;
+    
+    /* consume 'hex"' */
+    for (int i = 0; i < 4; i++) {
+        (void)ajis_input_next(lx->in, NULL);
+    }
+    
+    /* consume hex digits until closing quote */
+    int digit_count = 0;
+    for (;;) {
+        int c = ajis_input_peek(lx->in);
+        if (c < 0) {
+            set_err(err, AJIS_ERR_UNEXPECTED_EOF, lx->in, "unterminated hex binary literal");
+            return AJIS_ERR_UNEXPECTED_EOF;
+        }
+        
+        if (c == '"') {
+            /* closing quote */
+            (void)ajis_input_next(lx->in, NULL);
+            
+            /* hex must have even number of digits (pairs of bytes) */
+            if (digit_count % 2 != 0) {
+                set_err(err, AJIS_ERR_INVALID_STRING, lx->in, "hex binary must have even number of digits");
+                return AJIS_ERR_INVALID_STRING;
+            }
+            
+            set_tok(out, AJIS_TOKEN_HEX_BINARY, start, lx->in->offset - start);
+            return AJIS_OK;
+        }
+        
+        if (!is_hex_digit(c)) {
+            set_err(err, AJIS_ERR_INVALID_STRING, lx->in, "invalid character in hex binary literal");
+            return AJIS_ERR_INVALID_STRING;
+        }
+        
+        digit_count++;
+        (void)ajis_input_next(lx->in, NULL);
+    }
+}
+
+/* Lex base64 binary literal: b64"SGVsbG8=" */
+static ajis_error_code lex_b64_binary(ajis_lexer *lx, ajis_token *out, ajis_error *err) {
+    size_t start = lx->in->offset;
+    
+    /* consume 'b64"' */
+    for (int i = 0; i < 4; i++) {
+        (void)ajis_input_next(lx->in, NULL);
+    }
+    
+    /* consume base64 characters until closing quote */
+    for (;;) {
+        int c = ajis_input_peek(lx->in);
+        if (c < 0) {
+            set_err(err, AJIS_ERR_UNEXPECTED_EOF, lx->in, "unterminated b64 binary literal");
+            return AJIS_ERR_UNEXPECTED_EOF;
+        }
+        
+        if (c == '"') {
+            /* closing quote */
+            (void)ajis_input_next(lx->in, NULL);
+            set_tok(out, AJIS_TOKEN_B64_BINARY, start, lx->in->offset - start);
+            return AJIS_OK;
+        }
+        
+        if (!is_base64_char(c)) {
+            set_err(err, AJIS_ERR_INVALID_STRING, lx->in, "invalid character in b64 binary literal");
+            return AJIS_ERR_INVALID_STRING;
+        }
+        
+        (void)ajis_input_next(lx->in, NULL);
+    }
+}
+
 static ajis_error_code lex_number(ajis_lexer *lx, ajis_token *out, ajis_error *err) {
     size_t start = lx->in->offset;
 
@@ -294,6 +376,24 @@ static ajis_error_code lex_number(ajis_lexer *lx, ajis_token *out, ajis_error *e
        - separators must not be mixed within one literal
        - no separators in fraction/exponent
        ------------------------------------------------------------ */
+
+    /* Check for leading zero: single '0' is okay, but '0' followed by separator + digit or another digit is invalid */
+    if (ajis_input_peek(lx->in) == '0') {
+        int next = ajis_input_peek_ahead(lx->in, 1);
+        /* 0 followed by digit is invalid (e.g., "00", "01", "0123") */
+        if (is_digit(next)) {
+            set_err(err, AJIS_ERR_INVALID_NUMBER, lx->in, "leading zero not allowed");
+            return AJIS_ERR_INVALID_NUMBER;
+        }
+        /* 0 followed by separator + digit is invalid (e.g., "0_000", "0 123") */
+        if (lx->opt.allow_number_separators && is_sep(next)) {
+            int after_sep = ajis_input_peek_ahead(lx->in, 2);
+            if (is_digit(after_sep)) {
+                set_err(err, AJIS_ERR_INVALID_NUMBER, lx->in, "leading zero with separator not allowed");
+                return AJIS_ERR_INVALID_NUMBER;
+            }
+        }
+    }
 
     /* integer part */
     int saw_digit = 0;
@@ -530,9 +630,26 @@ ajis_error_code ajis_lexer_next(ajis_lexer *lx, ajis_token *out_tok, ajis_error 
         return lex_string(lx, out_tok, err);
     }
 
-    /* keywords: true/false/null */
+    /* keywords: true/false/null, and binary literals hex"/b64" */
     if (is_alpha(b)) {
         size_t start = lx->in->offset;
+
+        /* Check for binary literals first (hex" and b64") */
+        if (b == 'h') {
+            /* Check for hex" */
+            if (ajis_input_peek_ahead(lx->in, 1) == 'e' &&
+                ajis_input_peek_ahead(lx->in, 2) == 'x' &&
+                ajis_input_peek_ahead(lx->in, 3) == '"') {
+                return lex_hex_binary(lx, out_tok, err);
+            }
+        } else if (b == 'b') {
+            /* Check for b64" */
+            if (ajis_input_peek_ahead(lx->in, 1) == '6' &&
+                ajis_input_peek_ahead(lx->in, 2) == '4' &&
+                ajis_input_peek_ahead(lx->in, 3) == '"') {
+                return lex_b64_binary(lx, out_tok, err);
+            }
+        }
 
         if (match_keyword(lx, "true")) {
             set_tok(out_tok, AJIS_TOKEN_TRUE, start, 4);
